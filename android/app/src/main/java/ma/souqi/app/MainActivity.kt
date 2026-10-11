@@ -1,6 +1,7 @@
 package ma.souqi.app
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -9,8 +10,6 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.webkit.WebChromeClient
 import android.widget.Toast
-import androidx.activity.OnBackPressedCallback
-import android.app.Activity
 
 class MainActivity : Activity() {
     private lateinit var webView: WebView
@@ -30,7 +29,7 @@ class MainActivity : Activity() {
         webView.webChromeClient = WebChromeClient()
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-                val uri = request.url
+                val uri: Uri = request.url
                 if (uri.scheme == "https" && uri.host == siteHost) return false
                 if (uri.scheme == "https" || uri.scheme == "http") {
                     startActivity(Intent(Intent.ACTION_VIEW, uri))
@@ -46,21 +45,24 @@ class MainActivity : Activity() {
         } else {
             webView.loadUrl(siteUrl)
         }
+    }
 
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (webView.canGoBack()) webView.goBack() else finish()
-            }
-        })
+    @Deprecated("Deprecated in Android API; kept for compatibility with the WebView back stack")
+    override fun onBackPressed() {
+        if (::webView.isInitialized && webView.canGoBack()) {
+            webView.goBack()
+        } else {
+            super.onBackPressed()
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        webView.saveState(outState)
+        if (::webView.isInitialized) webView.saveState(outState)
         super.onSaveInstanceState(outState)
     }
 
     override fun onDestroy() {
-        webView.destroy()
+        if (::webView.isInitialized) webView.destroy()
         super.onDestroy()
     }
 }
