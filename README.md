@@ -41,7 +41,7 @@ The rules in firebase/firestore.rules and firebase/storage.rules have been tight
 - Cart and seller/admin pages still contain demo-only or incomplete flows.
 - Checkout is intentionally disabled until server-side order creation validates current prices, stock, ownership, and totals.
 - The npm run seed command only explains where demo data lives; it does not write to Firestore.
-- An Android source module/APK workflow has not yet been verified in this repository.
+- A lightweight Android WebView wrapper is available under `android/`; the GitHub Actions workflow builds a debug APK artifact. The wrapper requires internet and is not a fully native marketplace app.
 
 ## Deploying rules
 After reviewing the rules and setting up a Firebase project, install Firebase CLI and deploy with a properly configured firebase.json:
@@ -50,4 +50,4 @@ firebase deploy --only firestore:rules,storage
 Do not deploy unreviewed rules to a production database.
 
 ## Deployment
-The web app is structured for Vercel, but a live deployment, environment variables, and end-to-end browser tests still need to be configured and verified. Do not advertise demo products, ratings, stores, or metrics as real activity.
+The web app is deployed on Vercel at https://souqi-marketplace.vercel.app (also available at https://souqi-marketplace-scooltools7.vercel.app). The production build succeeded, but Firebase environment variables and live backend services are not configured yet. Real authentication, orders, checkout, and seller/admin workflows must not be advertised as ready. Do not advertise demo products, ratings, stores, or metrics as real activity.
