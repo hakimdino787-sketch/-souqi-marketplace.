@@ -1,15 +1,6 @@
-import { promises as fs } from 'fs';
-
-const demoData = {
-  categories: 8,
-  products: 24,
-  stores: 4,
-  seedLabel: 'demo-data',
-};
-
 async function main() {
-  await fs.writeFile('./.seed-log.json', JSON.stringify(demoData, null, 2), 'utf8');
-  console.log('Demo seed data prepared successfully.');
+  console.log('Souqi demo catalog is defined in lib/demo-data.ts and is imported by the storefront.');
+  console.log('This script does not write to Firestore. Configure Firebase and add a trusted seed script before using live data.');
+  console.log('No database was changed.');
 }
-
 main();
