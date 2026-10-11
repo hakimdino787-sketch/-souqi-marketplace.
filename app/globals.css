@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, 'Helvetica Neue', sans-serif;
+  background: #f8fafc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  text-decoration: none;
+}
+
+input, button, select, textarea {
+  font: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
