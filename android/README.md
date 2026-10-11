@@ -1,7 +1,7 @@
 # Souqi Android wrapper
 
 This module is a lightweight Android WebView wrapper around the deployed Souqi website at
-`https://souqi-marketplace.vercel.app`.
+`https://souqi-marketplace-scooltools7.vercel.app`.
 
 - The wrapper requires an internet connection.
 - It is a prototype shell, not a fully native marketplace implementation.
