@@ -3,28 +3,25 @@ import './globals.css';
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://souqi.ma'),
+  metadataBase: new URL(siteUrl),
   title: {
-    default: 'Souqi | سوقي',
-    template: '%s | Souqi',
+    default: 'سوقي | Souqi',
+    template: '%s | سوقي',
   },
-  description: 'Marketplace marocain moderne pour achats en ligne et vente locale.',
-  keywords: ['Souqi', 'Maroc', 'marketplace', 'achat', 'vente', 'MAD'],
+  description: 'سوقي منصة مغربية لاكتشاف المنتجات والمتاجر المحلية. نسخة تجريبية؛ الطلبات والدفع الحقيقي غير مفعّلين بعد.',
+  keywords: ['سوقي', 'Souqi', 'المغرب', 'التسوق', 'المنتجات المحلية', 'المتاجر المغربية'],
   openGraph: {
-    title: 'Souqi | سوقي',
-    description: 'Marketplace marocain moderne pour achats en ligne et vente locale.',
-    url: 'https://souqi.ma',
-    siteName: 'Souqi',
-    locale: 'fr_MA',
+    title: 'سوقي | Souqi',
+    description: 'اكتشف المنتجات والمتاجر المحلية في المغرب.',
+    url: siteUrl,
+    siteName: 'سوقي',
+    locale: 'ar_MA',
     type: 'website',
-  },
-  alternates: {
-    canonical: 'https://souqi.ma',
-    languages: {
-      ar: 'https://souqi.ma/ar',
-      fr: 'https://souqi.ma/fr',
-    },
   },
 };
 
