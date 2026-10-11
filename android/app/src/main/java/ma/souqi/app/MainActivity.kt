@@ -13,8 +13,8 @@ import android.widget.Toast
 
 class MainActivity : Activity() {
     private lateinit var webView: WebView
-    private val siteHost = "souqi-marketplace.vercel.app"
-    private val siteUrl = "https://souqi-marketplace.vercel.app"
+    private val siteHost = "souqi-marketplace-scooltools7.vercel.app"
+    private val siteUrl = "https://souqi-marketplace-scooltools7.vercel.app"
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
