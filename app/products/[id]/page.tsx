@@ -3,8 +3,9 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { products, reviews } from '@/lib/demo-data';
 
-export default function ProductDetailPage({ params }: { params: { id: string } }) {
-  const product = products.find((item) => item.id === params.id);
+export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const product = products.find((item) => item.id === id);
 
   if (!product) {
     notFound();
