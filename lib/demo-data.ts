@@ -37,20 +37,20 @@ export const products: Product[] = [
   { id: 'p16', name: 'قارورة حرارية', description: 'قارورة عملية للحفاظ على المشروبات أثناء التنقل.', price: 170, category: 'الصحة والعناية اليومية', store: 'Atlas Market', image: 'https://images.unsplash.com/photo-1523362628745-0c100150b504?auto=format&fit=crop&w=900&q=80', rating: 4.6, stock: 40, badge: 'أساسي' },
   { id: 'p17', name: 'علبة توابل مغربية', description: 'تشكيلة من التوابل المغربية.', price: 260, category: 'المواد الغذائية', store: 'Sahara Beauty', image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=900&q=80', rating: 4.8, stock: 28, badge: 'لذيذ' },
   { id: 'p18', name: 'حقيبة سفر', description: 'حقيبة سفر خفيفة وعملية وأنيقة.', price: 740, category: 'الأزياء والإكسسوارات', store: 'Atlas Market', image: 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&fit=crop&w=900&q=80', rating: 4.7, stock: 12, badge: 'للسفر' },
-  { id: 'p19', name: 'مصباح LED صغير', description: 'مصباح مكتبي بتصميم عصري.', price: 290, category: 'المنزل والديكور', store: 'Nour Home', image: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80', rating: 4.5, stock: 21, badge: 'Chic' },
-  { id: 'p20', name: 'Carte de visite premium', description: 'Pack de cartes de visite premium pour les professionnels.', price: 120, category: 'التكنولوجيا', store: 'Nour Home', image: 'https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=900&q=80', rating: 4.3, stock: 45, badge: 'Business' },
-  { id: 'p21', name: 'Bol souvenir marocain', description: 'Pièce artisanale de grande qualité pour les pièces de décoration.', price: 220, category: 'الصناعة التقليدية', store: 'Dunes Crafts', image: 'https://images.unsplash.com/photo-1517705008128-361805f42e86?auto=format&fit=crop&w=900&q=80', rating: 4.9, stock: 14, badge: 'فريد' },
-  { id: 'p22', name: 'Mélange de thé aux herbes', description: 'Mélange doux aux saveurs apaisantes et aliment post repas.', price: 110, category: 'المواد الغذائية', store: 'Atlas Market', image: 'https://images.unsplash.com/photo-1515823064-d6e0c04616a7?auto=format&fit=crop&w=900&q=80', rating: 4.7, stock: 34, badge: 'Soin' },
-  { id: 'p23', name: 'Coffret massage', description: 'Set de massage et encaustique pour relaxation et détente.', price: 460, category: 'الصحة والعناية اليومية', store: 'Sahara Beauty', image: 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=900&q=80', rating: 4.8, stock: 20, badge: 'Zen' },
-  { id: 'p24', name: 'Poterie artisanale', description: 'Pièces uniques en terre cuite avec motifs traditionnels.', price: 300, category: 'الصناعة التقليدية', store: 'Dunes Crafts', image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=900&q=80', rating: 4.9, stock: 16, badge: 'Artisanal' },
+  { id: 'p19', name: 'مصباح LED صغير', description: 'مصباح مكتبي بتصميم عصري.', price: 290, category: 'المنزل والديكور', store: 'Nour Home', image: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80', rating: 4.5, stock: 21, badge: 'أنيق' },
+  { id: 'p20', name: 'بطاقات أعمال فاخرة', description: 'مجموعة بطاقات أعمال مناسبة للمهنيين.', price: 120, category: 'التكنولوجيا', store: 'Nour Home', image: 'https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=900&q=80', rating: 4.3, stock: 45, badge: 'للأعمال' },
+  { id: 'p21', name: 'وعاء تذكاري مغربي', description: 'قطعة يدوية عالية الجودة للديكور.', price: 220, category: 'الصناعة التقليدية', store: 'Dunes Crafts', image: 'https://images.unsplash.com/photo-1517705008128-361805f42e86?auto=format&fit=crop&w=900&q=80', rating: 4.9, stock: 14, badge: 'فريد' },
+  { id: 'p22', name: 'مزيج شاي بالأعشاب', description: 'مزيج شاي بنكهة لطيفة للاستمتاع به بعد الوجبات.', price: 110, category: 'المواد الغذائية', store: 'Atlas Market', image: 'https://images.unsplash.com/photo-1515823064-d6e0c04616a7?auto=format&fit=crop&w=900&q=80', rating: 4.7, stock: 34, badge: 'عناية' },
+  { id: 'p23', name: 'مجموعة تدليك', description: 'مجموعة للعناية والاسترخاء والتدليك.', price: 460, category: 'الصحة والعناية اليومية', store: 'Sahara Beauty', image: 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=900&q=80', rating: 4.8, stock: 20, badge: 'استرخاء' },
+  { id: 'p24', name: 'فخار يدوي', description: 'قطع فخارية مميزة بزخارف تقليدية.', price: 300, category: 'الصناعة التقليدية', store: 'Dunes Crafts', image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=900&q=80', rating: 4.9, stock: 16, badge: 'صناعة يدوية' },
 ];
 
 export const featuredProducts = products.slice(0, 4);
 export const latestProducts = products.slice(4, 7);
 export const popularStores = stores.slice(0, 4);
 export const reviews: Review[] = [
-  { id: 'r1', user: 'Salma', rating: 5, comment: 'Produit magnifique, livraison rapide et emballage soigné.', date: '12 juin 2026' },
-  { id: 'r2', user: 'Karim', rating: 4, comment: 'Très bonne qualité, qualité de service au rendez-vous.', date: '18 juin 2026' },
-  { id: 'r3', user: 'Hajar', rating: 5, comment: 'Je recommande sans hésiter pour les cadeaux artisanaux.', date: '22 juin 2026' },
-  { id: 'r4', user: 'Youssef', rating: 4, comment: 'Bonne expérience générale, produit conforme à la description.', date: '27 juin 2026' },
+  { id: 'r1', user: 'Salma', rating: 5, comment: 'منتج جميل (تعليق تجريبي)، مع تغليف مرتب.', date: '12 juin 2026' },
+  { id: 'r2', user: 'Karim', rating: 4, comment: 'جودة جيدة (تعليق تجريبي).', date: '18 juin 2026' },
+  { id: 'r3', user: 'Hajar', rating: 5, comment: 'اختيار مناسب للهدايا التقليدية (تعليق تجريبي).', date: '22 juin 2026' },
+  { id: 'r4', user: 'Youssef', rating: 4, comment: 'وصف المنتج واضح (تعليق تجريبي).', date: '27 juin 2026' },
 ];
