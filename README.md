@@ -1,70 +1,53 @@
-# Souqi (سوقي) – Moroccan Marketplace
+# Souqi (سوقي) — Moroccan Marketplace
 
-## Overview
+Souqi is an Arabic-first marketplace prototype built with Next.js, TypeScript, Tailwind CSS, and Firebase client SDK. The current repository is a demo/scaffold, not yet a production marketplace.
 
-Souqi is a modern Moroccan marketplace for local commerce, curated products, and secure transactions. This project includes a production-oriented Next.js storefront, a Firebase backend, and an Android app skeleton that reuses the same authentication model and architecture.
+## Requirements
+- Node.js 20 or newer
+- A Firebase project for real authentication and database features
+- npm
 
-## Setup steps
+## Run locally
+1. Install dependencies: npm install
+2. Copy .env.example to .env.local.
+3. Fill in the real Firebase web app configuration values from Firebase Console.
+4. In Firebase Console, enable Email/Password under Authentication.
+5. Run npm run dev.
+6. Open the local URL printed by Next.js.
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-2. Copy environment variables:
-   ```bash
-   cp .env.example .env.local
-   ```
-3. Add your Firebase configuration values.
-4. Run the development server:
-   ```bash
-   npm run dev
-   ```
-5. Seed demo data:
-   ```bash
-   npm run seed
-   ```
-6. Run tests and checks:
-   ```bash
-   npm run type-check
-   npm run lint
-   npm run build
-   npm run test
-   ```
+Do not commit .env.local, service-account files, private keys, or other credentials. Firebase web config is intended for client apps, but it must still be protected with correct Security Rules and API restrictions.
 
-## Firebase configuration
+## Quality checks
+Run these commands:
+- npm run type-check
+- npm run lint
+- npm test
+- npm run build
 
-- Create a Firebase project and enable Authentication, Firestore, and Storage.
-- Populate `.env.local` using values from the Project Settings page.
-- Deploy rules using:
-  ```bash
-  firebase deploy --only firestore:rules,storage
-  ```
+GitHub Actions runs these checks on pushes to the maintenance branch and pull requests to main. The repository currently has no committed lockfile, so CI uses npm install; adding and maintaining a package lock is recommended for reproducible builds.
 
-## Android build
+## Firebase rules
+The rules in firebase/firestore.rules and firebase/storage.rules have been tightened as a safe baseline. They have not yet been deployed to a live Firebase project or verified with the Firebase Emulator Suite.
 
-The Android module is prepared under `apps/android` and follows a standard Gradle + Jetpack Compose structure. To build the APK:
+- User documents are owner-scoped; a browser cannot grant itself an admin role.
+- Store/product creation is owner-scoped and new content is pending moderation.
+- Image uploads are limited by owner path, image MIME type, and file size.
+- Direct client order writes and review creation are intentionally blocked until trusted server code can validate orders and completed purchases.
+- Admin access depends on a custom claim set by trusted Firebase Admin SDK code. No admin-claim provisioning script is included yet.
 
-```bash
-cd apps/android
-./gradlew assembleDebug
-```
+## Current functionality and limitations
+- The storefront and product detail pages use local demo data in lib/demo-data.ts.
+- Login, registration, and password reset use Firebase Auth when real environment values are configured.
+- Cart and seller/admin pages still contain demo-only or incomplete flows.
+- Checkout is intentionally disabled until server-side order creation validates current prices, stock, ownership, and totals.
+- The npm run seed command only explains where demo data lives; it does not write to Firestore.
+- An Android source module/APK workflow has not yet been verified in this repository.
 
-This produces a debug APK in `app/build/outputs/apk/debug/`.
+## Deploying rules
+After reviewing the rules and setting up a Firebase project, install Firebase CLI and deploy with a properly configured firebase.json:
+firebase deploy --only firestore:rules,storage
 
-## Demo data
-
-The project includes sample data for categories, products, stores, and reviews. These are clearly marked as demonstration content and should not be treated as real marketplace metrics.
-
-## Security notes
-
-- Never commit real Firebase service-account keys.
-- Keep client-side config in `.env.local` and do not hard-code credentials.
-- Use Firestore rules to enforce ownership and admin permissions.
+Do not deploy unreviewed rules to a production database.
 
 ## Deployment
-
-The frontend is Vercel-ready. Use Next.js production deployment settings and add the same Firebase environment variables in the Vercel project configuration.
-
-## Status
-
-This repository currently contains a working first implementation phase, with a strong storefront foundation and a documented path to deployment and Android packaging.
+The web app is structured for Vercel, but a live deployment, environment variables, and end-to-end browser tests still need to be configured and verified. Do not advertise demo products, ratings, stores, or metrics as real activity.

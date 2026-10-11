@@ -1,45 +1,107 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isSignedIn() {
+    function signedIn() {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
+    // Admin privileges must be granted through trusted Firebase Admin SDK
+    // custom claims; never trust a role submitted by the browser.
+    function isAdmin() {
+      return signedIn() && request.auth.token.admin == true;
+    }
+
+    function ownsUser(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function ownsStore(storeId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/stores/$(storeId))
+        && get(/databases/$(database)/documents/stores/$(storeId)).data.ownerId == request.auth.uid;
     }
 
     match /users/{userId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update, delete: if isOwner(userId);
+      allow read: if ownsUser(userId) || isAdmin();
+      allow create: if ownsUser(userId)
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.role == 'customer'
+        && request.resource.data.keys().hasOnly(['uid', 'displayName', 'email', 'role', 'createdAt', 'updatedAt']);
+      allow update: if ownsUser(userId)
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['displayName', 'photoURL', 'updatedAt']);
+      allow delete: if false;
     }
 
     match /stores/{storeId} {
       allow read: if true;
-      allow create: if isSignedIn();
-      allow update, delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if signedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.keys().hasOnly(['ownerId', 'name', 'description', 'city', 'logoUrl', 'status', 'createdAt', 'updatedAt']);
+      allow update: if isAdmin() || (signedIn()
+        && resource.data.ownerId == request.auth.uid
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.status == resource.data.status
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['name', 'description', 'city', 'logoUrl', 'updatedAt']));
+      allow delete: if isAdmin();
     }
 
     match /products/{productId} {
-      allow read: if true;
-      allow create: if isSignedIn();
-      allow update, delete: if isSignedIn() && resource.data.sellerId == request.auth.uid;
+      allow read: if resource.data.status == 'published'
+        || (signedIn() && resource.data.sellerId == request.auth.uid)
+        || isAdmin();
+      allow create: if signedIn()
+        && request.resource.data.sellerId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && ownsStore(request.resource.data.storeId)
+        && request.resource.data.price is number
+        && request.resource.data.price > 0
+        && request.resource.data.stock is int
+        && request.resource.data.stock >= 0
+        && request.resource.data.keys().hasOnly(['sellerId', 'storeId', 'name', 'description', 'category', 'price', 'stock', 'imageUrl', 'status', 'createdAt', 'updatedAt']);
+      allow update: if isAdmin() || (signedIn()
+        && resource.data.sellerId == request.auth.uid
+        && request.resource.data.sellerId == resource.data.sellerId
+        && request.resource.data.storeId == resource.data.storeId
+        && request.resource.data.status == resource.data.status
+        && request.resource.data.price is number
+        && request.resource.data.price > 0
+        && request.resource.data.stock is int
+        && request.resource.data.stock >= 0
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['name', 'description', 'category', 'price', 'stock', 'imageUrl', 'updatedAt']));
+      allow delete: if isAdmin();
     }
 
+    // Checkout must be implemented by trusted server code that re-reads prices
+    // and stock. Direct client order creation/updates are denied to prevent
+    // forged totals, stock manipulation, and unauthorized status changes.
     match /orders/{orderId} {
-      allow read: if isSignedIn() && (resource.data.buyerId == request.auth.uid || resource.data.sellerId == request.auth.uid || isAdmin());
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && (resource.data.buyerId == request.auth.uid || resource.data.sellerId == request.auth.uid || isAdmin());
+      allow read: if signedIn()
+        && (resource.data.buyerId == request.auth.uid
+          || resource.data.sellerId == request.auth.uid
+          || isAdmin());
+      allow create, update, delete: if false;
     }
 
-    function isAdmin() {
-      return isSignedIn() && request.auth.token.admin == true;
+    match /reviews/{reviewId} {
+      allow read: if true;
+      // Reviews are read-only until trusted server code verifies a completed purchase.
+      allow create: if false;
+      allow update, delete: if isAdmin();
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
     match /{document=**} {
-      allow read: if false;
-      allow write: if false;
+      allow read, write: if false;
     }
   }
 }
