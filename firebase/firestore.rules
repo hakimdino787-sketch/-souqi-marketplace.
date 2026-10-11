@@ -41,12 +41,12 @@ service cloud.firestore {
         && request.resource.data.ownerId == request.auth.uid
         && request.resource.data.status == 'pending'
         && request.resource.data.keys().hasOnly(['ownerId', 'name', 'description', 'city', 'logoUrl', 'status', 'createdAt', 'updatedAt']);
-      allow update: if signedIn()
+      allow update: if isAdmin() || (signedIn()
         && resource.data.ownerId == request.auth.uid
         && request.resource.data.ownerId == resource.data.ownerId
         && request.resource.data.status == resource.data.status
         && request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['name', 'description', 'city', 'logoUrl', 'updatedAt']);
+          .hasOnly(['name', 'description', 'city', 'logoUrl', 'updatedAt']));
       allow delete: if isAdmin();
     }
 
@@ -63,7 +63,7 @@ service cloud.firestore {
         && request.resource.data.stock is int
         && request.resource.data.stock >= 0
         && request.resource.data.keys().hasOnly(['sellerId', 'storeId', 'name', 'description', 'category', 'price', 'stock', 'imageUrl', 'status', 'createdAt', 'updatedAt']);
-      allow update: if signedIn()
+      allow update: if isAdmin() || (signedIn()
         && resource.data.sellerId == request.auth.uid
         && request.resource.data.sellerId == resource.data.sellerId
         && request.resource.data.storeId == resource.data.storeId
@@ -73,7 +73,7 @@ service cloud.firestore {
         && request.resource.data.stock is int
         && request.resource.data.stock >= 0
         && request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['name', 'description', 'category', 'price', 'stock', 'imageUrl', 'updatedAt']);
+          .hasOnly(['name', 'description', 'category', 'price', 'stock', 'imageUrl', 'updatedAt']));
       allow delete: if isAdmin();
     }
 
@@ -90,12 +90,8 @@ service cloud.firestore {
 
     match /reviews/{reviewId} {
       allow read: if true;
-      allow create: if signedIn()
-        && request.resource.data.userId == request.auth.uid
-        && request.resource.data.rating is int
-        && request.resource.data.rating >= 1
-        && request.resource.data.rating <= 5
-        && request.resource.data.keys().hasOnly(['userId', 'productId', 'rating', 'comment', 'createdAt']);
+      // Reviews are read-only until trusted server code verifies a completed purchase.
+      allow create: if false;
       allow update, delete: if isAdmin();
     }
 
