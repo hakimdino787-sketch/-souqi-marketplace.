@@ -1,39 +1,61 @@
-export default function ProfilePage() {
-  return (
-    <div className="mx-auto max-w-6xl px-4 py-10 md:px-6">
-      <h1 className="text-3xl font-black text-slate-900">Mon profil</h1>
-      <div className="mt-8 grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-soft">
-          <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-100 text-2xl font-black text-orange-700">A</div>
-            <div>
-              <p className="text-xl font-black text-slate-900">Amine Rahal</p>
-              <p className="text-sm text-slate-500">amine@demo.ma</p>
-            </div>
-          </div>
-          <div className="mt-6 space-y-4 text-sm text-slate-600">
-            <p>Adresse: Rabat</p>
-            <p>Ville: Rabat</p>
-            <p>Compte: Client</p>
-          </div>
-        </div>
+'use client';
 
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-soft">
-          <h2 className="text-xl font-black text-slate-900">Historique des commandes</h2>
-          <div className="mt-5 space-y-3">
-            {[
-              { id: 'SOU-1024', status: 'En cours', total: '640 MAD' },
-              { id: 'SOU-0891', status: 'Livrée', total: '890 MAD' },
-            ].map((order) => (
-              <div key={order.id} className="flex items-center justify-between rounded-2xl bg-slate-50 p-4">
-                <div>
-                  <p className="font-bold text-slate-900">{order.id}</p>
-                  <p className="text-sm text-slate-500">{order.status}</p>
-                </div>
-                <span className="font-bold text-slate-900">{order.total}</span>
-              </div>
-            ))}
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient, supabaseReady } from '@/lib/supabase';
+import type { User } from '@supabase/supabase-js';
+
+export default function ProfilePage() {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!supabaseReady) {
+      setError('إعداد Supabase غير مكتمل.');
+      setLoading(false);
+      return;
+    }
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data, error: authError }) => {
+      if (authError || !data.user) {
+        router.replace('/auth/login');
+        return;
+      }
+      setUser(data.user);
+      setLoading(false);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session?.user) router.replace('/auth/login');
+      else setUser(session.user);
+    });
+    return () => listener.subscription.unsubscribe();
+  }, [router]);
+
+  async function signOut() {
+    const { error: signOutError } = await createClient().auth.signOut();
+    if (signOutError) setError('تعذر تسجيل الخروج. حاول مرة أخرى.');
+    else router.replace('/');
+  }
+
+  if (loading) return <div className="mx-auto max-w-4xl px-4 py-16 text-center">جاري تحميل الحساب...</div>;
+
+  return (
+    <div dir="rtl" className="mx-auto max-w-4xl px-4 py-10 md:px-6">
+      <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-soft">
+        <h1 className="text-3xl font-black text-slate-900">حسابي في سوقي</h1>
+        {error && <p role="alert" className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-5">
+          <div>
+            <p className="text-xl font-bold text-slate-900">{user?.user_metadata?.full_name || 'مستخدم سوقي'}</p>
+            <p className="mt-1 text-sm text-slate-500">{user?.email}</p>
+            <p className="mt-3 text-xs text-slate-400">معرّف الحساب: {user?.id}</p>
           </div>
+          <button onClick={signOut} className="rounded-xl bg-slate-900 px-5 py-3 font-semibold text-white">تسجيل الخروج</button>
+        </div>
+        <div className="mt-8 rounded-2xl bg-amber-50 p-4 text-sm leading-7 text-amber-800">
+          سجل الطلبات والبائعين سيظهر هنا بعد تفعيل عمليات الشراء وإضافة منتجات حقيقية. لا توجد طلبات تجريبية معروضة كأنها طلبات فعلية.
         </div>
       </div>
     </div>
