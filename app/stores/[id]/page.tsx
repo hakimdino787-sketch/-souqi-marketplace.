@@ -1,0 +1,10 @@
+'use client';
+import Image from 'next/image';
+import Link from 'next/link';
+import {useEffect,useState} from 'react';
+import {useParams} from 'next/navigation';
+import {createClient,supabaseReady} from '@/lib/supabase';
+import {toProduct} from '@/lib/marketplace';
+import type {Product} from '@/lib/types';
+type Store={id:string;name:string;city:string;description:string};
+export default function StoreDetailPage(){const {id}=useParams<{id:string}>();const [store,setStore]=useState<Store|null>(null),[products,setProducts]=useState<Product[]>([]),[loading,setLoading]=useState(true);useEffect(()=>{if(!supabaseReady){setLoading(false);return;}const db=createClient();Promise.all([db.from('stores').select('id,name,city,description').eq('id',id).eq('status','active').maybeSingle(),db.from('products').select('id,name,description,price_mad,stock,image_url,status,stores!inner(name,city,status),categories(name,slug)').eq('store_id',id).eq('status','active').eq('stores.status','active')]).then(([s,p])=>{setStore(s.data);setProducts((p.data??[]).map(x=>toProduct(x as never)));setLoading(false);});},[id]);if(loading)return <p className="py-20 text-center">جاري التحميل...</p>;if(!store)return <div dir="rtl" className="py-20 text-center">المتجر غير موجود. <Link href="/stores">العودة للمتاجر</Link></div>;return <div dir="rtl" className="mx-auto max-w-6xl px-4 py-10"><h1 className="text-3xl font-black">{store.name}</h1><p className="mt-2 text-slate-500">{store.city}</p><p className="mt-4 max-w-2xl leading-7">{store.description}</p><h2 className="mt-10 text-2xl font-bold">منتجات المتجر</h2>{products.length===0?<p className="mt-4 text-slate-500">لا توجد منتجات منشورة.</p>:<div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{products.map(p=><Link key={p.id} href={'/products/'+p.id} className="overflow-hidden rounded-2xl border bg-white"><Image unoptimized src={p.image} alt={p.name} width={500} height={350} className="h-44 w-full object-cover"/><div className="p-4"><b>{p.name}</b><p className="mt-2 font-black">{p.price} درهم</p></div></Link>)}</div>}</div>;}
