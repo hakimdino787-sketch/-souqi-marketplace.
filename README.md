@@ -1,53 +1,53 @@
-# Souqi (سوقي) — Moroccan Marketplace
+# سوقي | Souqi Maroc
 
-Souqi is an Arabic-first marketplace prototype built with Next.js, TypeScript, Tailwind CSS, and Firebase client SDK. The current repository is a demo/scaffold, not yet a production marketplace.
+سوقي منصة تجارة إلكترونية مغربية بواجهة عربية مبنية بـ Next.js 15 وTypeScript وSupabase (Auth + PostgreSQL + Storage) ومستضافة على Vercel.
 
-## Requirements
-- Node.js 20 or newer
-- A Firebase project for real authentication and database features
-- npm
+## تشغيل المشروع
+1. Node.js 20 أو أحدث.
+2. نفّذ `npm install`.
+3. انسخ `.env.example` إلى `.env.local`.
+4. أضف `NEXT_PUBLIC_SUPABASE_URL` و`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+5. شغّل `npm run dev`.
 
-## Run locally
-1. Install dependencies: npm install
-2. Copy .env.example to .env.local.
-3. Fill in the real Firebase web app configuration values from Firebase Console.
-4. In Firebase Console, enable Email/Password under Authentication.
-5. Run npm run dev.
-6. Open the local URL printed by Next.js.
+لا تضف أبداً service-role أو secret key إلى متغير يبدأ بـ `NEXT_PUBLIC_` أو إلى GitHub.
 
-Do not commit .env.local, service-account files, private keys, or other credentials. Firebase web config is intended for client apps, but it must still be protected with correct Security Rules and API restrictions.
+## الوظائف الحالية
+- تسجيل الحساب وتسجيل الدخول واستعادة كلمة المرور عبر Supabase Auth.
+- ملف الزبون وسجل طلباته.
+- فهرس المنتجات والمتاجر والفئات يقرأ البيانات الحقيقية من Supabase؛ لا تعرض المنصة بيانات متجر أو منتج وهمية.
+- السلة تحفظ محلياً على جهاز المستخدم، لكن الخادم يعيد التحقق من الأسعار والمخزون.
+- إتمام الطلب عند الاستلام فقط (COD)، مع إنشاء طلب مستقل لكل متجر داخل السلة.
+- خصم المخزون وتثبيت سعر الطلب داخل PostgreSQL في معاملة واحدة.
+- البائع يطلب فتح متجر، يضيف منتجات، ويرفع صورها إلى Storage.
+- الإدارة توافق على المتاجر والمنتجات، تراجع التقييمات، وتدير حالات الطلبات.
+- التقييمات لا تُقبل إلا من مشترٍ لديه طلب تم تسليمه، وتبقى مخفية حتى مراجعة الإدارة.
+- RLS مفعّل على جميع جداول public، مع سياسات ملكية وصلاحيات الإدارة.
+- صفحات المتاجر والمنتجات والخصوصية والشروط والمساعدة والتواصل متاحة.
 
-## Quality checks
-Run these commands:
-- npm run type-check
-- npm run lint
-- npm test
-- npm run build
+## قاعدة البيانات والأمان
+المخطط موجود في مشروع Supabase المرتبط. جداول `profiles`, `categories`, `stores`, `products`, `orders`, `order_items`, `reviews` محمية بـ RLS.
+دالة الطلب الداخلية موجودة في schema غير مكشوف، والواجهة تستدعي wrapper محدوداً للمستخدمين المسجلين. مفتاح service role لا يستخدم في المتصفح.
+صور المنتجات في bucket باسم `product-images` مع تقييد الرفع بمجلد صاحب الحساب وحجم 5MB وأنواع الصور المعتمدة.
 
-GitHub Actions runs these checks on pushes to the maintenance branch and pull requests to main. The repository currently has no committed lockfile, so CI uses npm install; adding and maintaining a package lock is recommended for reproducible builds.
+## إعدادات Supabase المطلوبة مرة واحدة
+- من Authentication → URL Configuration: عيّن Site URL إلى `https://souqi-marketplace.vercel.app` وأضف `https://souqi-marketplace.vercel.app/**` إلى Redirect URLs. أضف رابط Preview عند الاختبار.
+- تأكد من تفعيل Email provider، واضبط تأكيد البريد وإعداد SMTP حسب احتياجك.
+- بعد إنشاء أول حساب مالك، امنحه دور الإدارة من لوحة Supabase فقط عبر `app_metadata`، وليس `user_metadata`. لا يمكن للمستخدم منح نفسه دور admin من الموقع.
+- لا تنشر المنتجات أو المتاجر إلا بعد مراجعة بيانات البائع ومصداقية المنتج.
 
-## Firebase rules
-The rules in firebase/firestore.rules and firebase/storage.rules have been tightened as a safe baseline. They have not yet been deployed to a live Firebase project or verified with the Firebase Emulator Suite.
+## حدود واضحة
+- وسيلة الدفع الوحيدة حالياً هي الأداء عند الاستلام؛ لا يوجد دفع إلكتروني أو بوابة بطاقات مرتبطة.
+- الشحن مضبوط على 0 درهم حالياً، ويجب اعتماد سياسة توصيل وتسعير قبل استقبال الطلبات على نطاق واسع.
+- لا توجد بيانات منتجات فعلية بعد؛ المنتجات لا تظهر حتى يضيفها بائع ويوافق عليها المدير.
+- لا يوجد ربط آلي بشركات الشحن أو فواتير ضريبية أو نظام نزاعات/استرجاع آلي.
+- لا يوجد حساب مدير معيّن تلقائياً؛ يجب تعيينه يدوياً في Supabase بعد معرفة حساب المالك.
+- ملف lockfile لـ npm غير موجود في المستودع حتى الآن؛ الإصدارات المباشرة مثبتة في package.json، ويجب توليد package-lock ومراجعته قبل اعتماد CI نهائي.
 
-- User documents are owner-scoped; a browser cannot grant itself an admin role.
-- Store/product creation is owner-scoped and new content is pending moderation.
-- Image uploads are limited by owner path, image MIME type, and file size.
-- Direct client order writes and review creation are intentionally blocked until trusted server code can validate orders and completed purchases.
-- Admin access depends on a custom claim set by trusted Firebase Admin SDK code. No admin-claim provisioning script is included yet.
+## التحقق والنشر
+- GitHub Actions يشغّل TypeScript وESLint والاختبارات وNext.js production build.
+- Vercel ينشر تلقائياً من main.
+- الموقع: https://souqi-marketplace.vercel.app
+- GitHub: https://github.com/hakimdino787-sketch/-souqi-marketplace.
+- Supabase: https://supabase.com/dashboard/project/ptbjljyfzwjgebyswvth
 
-## Current functionality and limitations
-- The storefront and product detail pages use local demo data in lib/demo-data.ts.
-- Login, registration, and password reset use Firebase Auth when real environment values are configured.
-- Cart and seller/admin pages still contain demo-only or incomplete flows.
-- Checkout is intentionally disabled until server-side order creation validates current prices, stock, ownership, and totals.
-- The npm run seed command only explains where demo data lives; it does not write to Firestore.
-- A lightweight Android WebView wrapper is available under `android/`; the GitHub Actions workflow builds a debug APK artifact. The wrapper requires internet and is not a fully native marketplace app.
-
-## Deploying rules
-After reviewing the rules and setting up a Firebase project, install Firebase CLI and deploy with a properly configured firebase.json:
-firebase deploy --only firestore:rules,storage
-
-Do not deploy unreviewed rules to a production database.
-
-## Deployment
-The web app is deployed on Vercel at https://souqi-marketplace.vercel.app (also available at https://souqi-marketplace-scooltools7.vercel.app). The production build succeeded, but Firebase environment variables and live backend services are not configured yet. Real authentication, orders, checkout, and seller/admin workflows must not be advertised as ready. Do not advertise demo products, ratings, stores, or metrics as real activity.
+سوقي الآن أساس متجر متعدد البائعين مع طلبات عند الاستلام؛ لا تعتبره بوابة دفع إلكتروني حتى يتم اختيار مزود دفع وتفعيله واختباره.
