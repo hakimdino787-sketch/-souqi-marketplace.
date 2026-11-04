@@ -32,7 +32,7 @@ export default function CartPage() {
           <div className="space-y-4">
             {items.map((item) => (
               <article key={item.id} className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center">
-                <Image src={item.image} alt={item.name} width={120} height={100} className="h-24 w-full rounded-2xl object-cover sm:w-28" />
+                <Image unoptimized src={item.image} alt={item.name} width={120} height={100} className="h-24 w-full rounded-2xl object-cover sm:w-28" />
                 <div className="min-w-0 flex-1">
                   <h2 className="font-bold text-slate-900">{item.name}</h2>
                   <p className="mt-1 text-sm text-slate-500">{item.store}</p>
