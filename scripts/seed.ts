@@ -1,6 +1,7 @@
 async function main() {
-  console.log('Souqi demo catalog is defined in lib/demo-data.ts and is imported by the storefront.');
-  console.log('This script does not write to Firestore. Configure Firebase and add a trusted seed script before using live data.');
-  console.log('No database was changed.');
+  console.log('Souqi uses Supabase for authentication, PostgreSQL data, and object storage.');
+  console.log('Marketplace categories are seeded in the Supabase database migration.');
+  console.log('Demo products remain in lib/demo-data.ts until sellers publish verified listings.');
+  console.log('Never seed production with fictional orders, reviews, seller identities, or inventory.');
 }
 main();
