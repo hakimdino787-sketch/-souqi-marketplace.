@@ -34,7 +34,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           setItems(parsed.filter((item): item is CartItem =>
             item !== null &&
             typeof item === 'object' &&
-            typeof item.id === 'string' &&
+            typeof item.id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(item.id) &&
             typeof item.name === 'string' &&
             typeof item.price === 'number' &&
             typeof item.quantity === 'number' &&

@@ -14,7 +14,7 @@ export default function CartPage() {
   return (
     <div dir="rtl" className="mx-auto max-w-5xl px-4 py-12 md:px-6">
       <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
-        هذه سلة محلية تجريبية تحفظ العناصر على هذا الجهاز فقط. المنتجات والأسعار تجريبية، ولا يتم إرسال أي طلب أو خصم أي مبلغ.
+        السلة محفوظة على هذا الجهاز. السعر والمخزون النهائيان يعاد التحقق منهما عند تأكيد الطلب.
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-black text-slate-900">سلة المشتريات</h1>
@@ -32,7 +32,7 @@ export default function CartPage() {
           <div className="space-y-4">
             {items.map((item) => (
               <article key={item.id} className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center">
-                <Image src={item.image} alt={item.name} width={120} height={100} className="h-24 w-full rounded-2xl object-cover sm:w-28" />
+                <Image unoptimized src={item.image} alt={item.name} width={120} height={100} className="h-24 w-full rounded-2xl object-cover sm:w-28" />
                 <div className="min-w-0 flex-1">
                   <h2 className="font-bold text-slate-900">{item.name}</h2>
                   <p className="mt-1 text-sm text-slate-500">{item.store}</p>
@@ -52,8 +52,8 @@ export default function CartPage() {
             <h2 className="text-lg font-black text-slate-900">ملخص السلة</h2>
             <div className="mt-5 flex justify-between text-sm text-slate-600"><span>عدد القطع</span><span>{items.reduce((sum, item) => sum + item.quantity, 0)}</span></div>
             <div className="mt-3 flex justify-between text-sm text-slate-600"><span>المجموع التجريبي</span><span className="font-bold">{money(subtotal)} درهم</span></div>
-            <p className="mt-4 rounded-xl bg-amber-50 p-3 text-xs leading-6 text-amber-800">الدفع وإرسال الطلب غير متاحين حتى يتم ربط قاعدة بيانات وخادم موثوق.</p>
-            <button disabled className="mt-4 w-full cursor-not-allowed rounded-xl bg-slate-300 px-4 py-3 font-semibold text-slate-600">إتمام الطلب — غير متاح حالياً</button>
+            <p className="mt-4 rounded-xl bg-amber-50 p-3 text-xs leading-6 text-amber-800">الأداء عند الاستلام. يتم احتساب السعر النهائي والتحقق من المخزون داخل قاعدة البيانات.</p>
+            <Link href="/checkout" className="mt-4 block w-full rounded-xl bg-orange-600 px-4 py-3 text-center font-semibold text-white">إتمام الطلب</Link>
             <Link href="/products" className="mt-3 block text-center text-sm font-semibold text-orange-700">متابعة التسوق</Link>
           </aside>
         </div>

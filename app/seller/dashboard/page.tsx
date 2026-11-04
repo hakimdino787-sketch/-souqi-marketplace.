@@ -1,38 +1,22 @@
-export default function SellerDashboardPage() {
-  return (
-    <div dir="rtl" className="mx-auto max-w-7xl px-4 py-10 md:px-6">
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
-        هذه لوحة تجريبية: المبيعات والطلبات والمنتجات أدناه أمثلة ثابتة وليست بيانات حقيقية. يلزم ربط Firebase وحماية المسارات قبل استعمالها مع بائعين حقيقيين.
-      </div>
-      <h1 className="mt-6 text-3xl font-black text-slate-900">لوحة البائع — عرض تجريبي</h1>
-      <div className="mt-8 grid gap-5 md:grid-cols-3">
-        {[
-          { label: 'مبيعات تجريبية', value: '12 500 MAD' },
-          { label: 'طلبات تجريبية', value: '48' },
-          { label: 'تقييم تجريبي', value: '4.8 / 5' },
-        ].map((stat) => (
-          <div key={stat.label} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-500">{stat.label}</p>
-            <p className="mt-3 text-3xl font-black text-slate-900">{stat.value}</p>
-          </div>
-        ))}
-      </div>
-      <div className="mt-8 grid gap-8 lg:grid-cols-2">
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-soft">
-          <h2 className="text-xl font-black text-slate-900">منتجات تجريبية</h2>
-          <ul className="mt-5 space-y-3">
-            <li className="flex items-center justify-between rounded-2xl bg-slate-50 p-3"><span>وشاح مغربي (مثال)</span><span className="font-bold text-emerald-600">منشور تجريبياً</span></li>
-            <li className="flex items-center justify-between rounded-2xl bg-slate-50 p-3"><span>وعاء خزفي (مثال)</span><span className="font-bold text-amber-600">مخزون تجريبي</span></li>
-          </ul>
-        </div>
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-soft">
-          <h2 className="text-xl font-black text-slate-900">طلبات تجريبية</h2>
-          <ul className="mt-5 space-y-3">
-            <li className="flex justify-between rounded-2xl bg-slate-50 p-3"><span>طلب #DEMO-4021</span><span>قيد التحضير (مثال)</span></li>
-            <li className="flex justify-between rounded-2xl bg-slate-50 p-3"><span>طلب #DEMO-4014</span><span>تم التسليم (مثال)</span></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  );
+'use client';
+import {useEffect,useState} from 'react';
+import {useRouter} from 'next/navigation';
+import {createClient,supabaseReady} from '@/lib/supabase';
+import {ProductImageUpload} from '@/components/product-image-upload';
+type Store={id:string;name:string;city:string;status:string};
+type ProductRow={id:string;name:string;price_mad:number;stock:number;status:string};
+type Category={id:string;name:string};
+type Order={id:string;status:string;total_mad:number;customer_name:string;created_at:string};
+export default function SellerDashboardPage(){
+ const router=useRouter();const [store,setStore]=useState<Store|null>(null),[products,setProducts]=useState<ProductRow[]>([]),[categories,setCategories]=useState<Category[]>([]),[orders,setOrders]=useState<Order[]>([]);
+ const [storeName,setStoreName]=useState(''),[city,setCity]=useState(''),[description,setDescription]=useState('');
+ const [name,setName]=useState(''),[details,setDetails]=useState(''),[price,setPrice]=useState(''),[stock,setStock]=useState('1'),[category,setCategory]=useState(''),[image,setImage]=useState('');
+ const [message,setMessage]=useState(''),[busy,setBusy]=useState(false);
+ async function load(){if(!supabaseReady)return;const db=createClient();const {data:{user}}=await db.auth.getUser();if(!user){router.replace('/auth/login');return;}const [s,c]=await Promise.all([db.from('stores').select('id,name,city,status').eq('owner_id',user.id).maybeSingle(),db.from('categories').select('id,name').eq('is_active',true)]);if(s.data){setStore(s.data);const [p,o]=await Promise.all([db.from('products').select('id,name,price_mad,stock,status').eq('store_id',s.data.id).order('created_at',{ascending:false}),db.from('orders').select('id,status,total_mad,customer_name,customer_phone,created_at,order_items(product_name,quantity)').eq('store_id',s.data.id).order('created_at',{ascending:false})]);setProducts(p.data??[]);setOrders(o.data??[]);}if(!c.error)setCategories(c.data??[]);}
+ useEffect(()=>{void load();},[]);
+ async function createStore(e:{preventDefault:()=>void}){e.preventDefault();setBusy(true);setMessage('');try{const db=createClient();const {data:{user}}=await db.auth.getUser();if(!user)throw new Error('سجل الدخول أولاً.');const {error}=await db.from('stores').insert({owner_id:user.id,name:storeName.trim(),slug:'souqi-'+user.id.slice(0,12),city:city.trim(),description:description.trim()});if(error)throw error;setMessage('تم إرسال طلب فتح المتجر للإدارة.');await load();}catch(e){setMessage(e instanceof Error?e.message:'تعذر إنشاء المتجر.');}finally{setBusy(false);}}
+ async function addProduct(e:{preventDefault:()=>void}){e.preventDefault();if(!store)return;setBusy(true);setMessage('');try{const {error}=await createClient().from('products').insert({store_id:store.id,category_id:category||null,name:name.trim(),description:details.trim(),price_mad:Number(price),stock:Number(stock),image_url:image.trim()||null});if(error)throw error;setMessage('تم حفظ المنتج كمسودة، ويمكن للإدارة مراجعته قبل النشر.');setName('');setDetails('');setPrice('');setImage('');await load();}catch(e){setMessage(e instanceof Error?e.message:'تعذر إضافة المنتج.');}finally{setBusy(false);}}
+ async function changeStatus(id:string,status:string){const {error}=await createClient().from('orders').update({status}).eq('id',id);setMessage(error?'تعذر تحديث حالة الطلب.':'تم تحديث حالة الطلب.');await load();}
+ if(!supabaseReady)return <div className="p-12 text-center">خدمة الحسابات غير متاحة.</div>;
+ return <div dir="rtl" className="mx-auto max-w-6xl px-4 py-10"><h1 className="text-3xl font-black">لوحة البائع</h1><p className="mt-2 text-slate-500">إدارة متجرك ومنتجاتك والطلبات الواردة.</p>{message&&<p role="status" className="my-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">{message}</p>}{!store?<form onSubmit={createStore} className="mt-8 max-w-xl space-y-4 rounded-3xl border bg-white p-6"><h2 className="text-xl font-bold">طلب فتح متجر</h2><input required value={storeName} onChange={e=>setStoreName(e.target.value)} placeholder="اسم المتجر" className="w-full rounded-xl border p-3"/><input required value={city} onChange={e=>setCity(e.target.value)} placeholder="المدينة" className="w-full rounded-xl border p-3"/><textarea value={description} onChange={e=>setDescription(e.target.value)} placeholder="نبذة عن المتجر" className="w-full rounded-xl border p-3"/><button disabled={busy} className="rounded-xl bg-orange-600 px-5 py-3 text-white">إرسال طلب المتجر</button></form>:<><div className="mt-6 rounded-2xl border bg-white p-5"><div className="flex flex-wrap justify-between gap-3"><div><h2 className="text-xl font-bold">{store.name}</h2><p className="text-sm text-slate-500">{store.city}</p></div><span className="rounded-full bg-amber-100 px-4 py-2 text-sm">{store.status==='active'?'متجر مفعل':'بانتظار موافقة الإدارة'}</span></div></div><div className="mt-8 grid gap-8 lg:grid-cols-2"><form onSubmit={addProduct} className="space-y-3 rounded-3xl border bg-white p-6"><h2 className="text-xl font-bold">إضافة منتج</h2><input required value={name} onChange={e=>setName(e.target.value)} placeholder="اسم المنتج" className="w-full rounded-xl border p-3"/><textarea value={details} onChange={e=>setDetails(e.target.value)} placeholder="وصف المنتج" className="w-full rounded-xl border p-3"/><select required value={category} onChange={e=>setCategory(e.target.value)} className="w-full rounded-xl border p-3"><option value="">اختر الفئة</option>{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select><input required type="number" min="0.01" step="0.01" value={price} onChange={e=>setPrice(e.target.value)} placeholder="السعر بالدرهم" className="w-full rounded-xl border p-3"/><input required type="number" min="0" step="1" value={stock} onChange={e=>setStock(e.target.value)} placeholder="المخزون" className="w-full rounded-xl border p-3"/><ProductImageUpload onUploaded={setImage}/>{image&&<p className="text-xs text-emerald-700">الصورة جاهزة للمنتج.</p>}<button disabled={busy||store.status!=='active'} className="rounded-xl bg-slate-900 px-5 py-3 text-white disabled:opacity-40">{store.status==='active'?'حفظ كمسودة':'انتظر تفعيل المتجر'}</button></form><section className="rounded-3xl border bg-white p-6"><h2 className="text-xl font-bold">منتجات متجرك</h2>{products.length===0?<p className="mt-4 text-slate-500">لم تضف منتجات بعد.</p>:products.map(p=><div key={p.id} className="flex justify-between gap-3 border-b py-3"><span>{p.name} · {p.price_mad} درهم</span><span className="text-sm text-slate-500">{p.status==='active'?'منشور':p.status==='draft'?'مسودة':'مؤرشف'}</span></div>)}</section></div><section className="mt-8 rounded-3xl border bg-white p-6"><h2 className="text-xl font-bold">الطلبات الواردة</h2>{orders.length===0?<p className="mt-4 text-slate-500">لا توجد طلبات بعد.</p>:orders.map(o=><div key={o.id} className="flex flex-wrap items-center justify-between gap-3 border-b py-4"><div><p className="font-bold">{o.customer_name}</p><p className="text-sm text-slate-500">{o.total_mad} درهم · {o.status}</p></div><select value={o.status} onChange={e=>void changeStatus(o.id,e.target.value)} className="rounded-xl border p-2"><option value="pending">جديد</option><option value="confirmed">مؤكد</option><option value="processing">قيد التحضير</option><option value="shipped">تم الشحن</option><option value="delivered">تم التسليم</option></select></div>)}</section></>}</div>;
 }
