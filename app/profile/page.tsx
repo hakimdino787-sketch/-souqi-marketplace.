@@ -1,63 +1,13 @@
 'use client';
-
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { createClient, supabaseReady } from '@/lib/supabase';
-import type { User } from '@supabase/supabase-js';
-
-export default function ProfilePage() {
-  const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (!supabaseReady) {
-      setError('إعداد Supabase غير مكتمل.');
-      setLoading(false);
-      return;
-    }
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data, error: authError }) => {
-      if (authError || !data.user) {
-        router.replace('/auth/login');
-        return;
-      }
-      setUser(data.user);
-      setLoading(false);
-    });
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session?.user) router.replace('/auth/login');
-      else setUser(session.user);
-    });
-    return () => listener.subscription.unsubscribe();
-  }, [router]);
-
-  async function signOut() {
-    const { error: signOutError } = await createClient().auth.signOut();
-    if (signOutError) setError('تعذر تسجيل الخروج. حاول مرة أخرى.');
-    else router.replace('/');
-  }
-
-  if (loading) return <div className="mx-auto max-w-4xl px-4 py-16 text-center">جاري تحميل الحساب...</div>;
-
-  return (
-    <div dir="rtl" className="mx-auto max-w-4xl px-4 py-10 md:px-6">
-      <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-soft">
-        <h1 className="text-3xl font-black text-slate-900">حسابي في سوقي</h1>
-        {error && <p role="alert" className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-        <div className="mt-8 flex flex-wrap items-center justify-between gap-5">
-          <div>
-            <p className="text-xl font-bold text-slate-900">{user?.user_metadata?.full_name || 'مستخدم سوقي'}</p>
-            <p className="mt-1 text-sm text-slate-500">{user?.email}</p>
-            <p className="mt-3 text-xs text-slate-400">معرّف الحساب: {user?.id}</p>
-          </div>
-          <button onClick={signOut} className="rounded-xl bg-slate-900 px-5 py-3 font-semibold text-white">تسجيل الخروج</button>
-        </div>
-        <div className="mt-8 rounded-2xl bg-amber-50 p-4 text-sm leading-7 text-amber-800">
-          سجل الطلبات والبائعين سيظهر هنا بعد تفعيل عمليات الشراء وإضافة منتجات حقيقية. لا توجد طلبات تجريبية معروضة كأنها طلبات فعلية.
-        </div>
-      </div>
-    </div>
-  );
+import Link from 'next/link';
+import {useEffect,useState} from 'react';
+import {useRouter} from 'next/navigation';
+import {createClient,supabaseReady} from '@/lib/supabase';
+import type {User} from '@supabase/supabase-js';
+type Order={id:string;status:string;total_mad:number;created_at:string;shipping_city:string};
+export default function ProfilePage(){const router=useRouter();const [user,setUser]=useState<User|null>(null),[orders,setOrders]=useState<Order[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState('');
+ useEffect(()=>{if(!supabaseReady){setError('إعداد قاعدة البيانات غير مكتمل.');setLoading(false);return;}const db=createClient();db.auth.getUser().then(async({data,error:e})=>{if(e||!data.user){router.replace('/auth/login');return;}setUser(data.user);const result=await db.from('orders').select('id,status,total_mad,created_at,shipping_city').eq('customer_id',data.user.id).order('created_at',{ascending:false});if(result.error)setError('تعذر تحميل الطلبات.');else setOrders(result.data??[]);setLoading(false);});const {data:listener}=db.auth.onAuthStateChange((_event,session)=>{if(!session?.user)router.replace('/auth/login');});return()=>listener.subscription.unsubscribe();},[router]);
+ async function signOut(){const {error:e}=await createClient().auth.signOut();if(e)setError('تعذر تسجيل الخروج.');else router.replace('/');}
+ if(loading)return <p className="py-20 text-center">جاري تحميل الحساب...</p>;
+ return <div dir="rtl" className="mx-auto max-w-5xl px-4 py-10"><section className="rounded-3xl border bg-white p-7"><h1 className="text-3xl font-black">حسابي في سوقي</h1><p className="mt-5 text-xl font-bold">{user?.user_metadata?.full_name||'مستخدم سوقي'}</p><p className="text-slate-500">{user?.email}</p>{error&&<p role="alert" className="mt-4 text-red-700">{error}</p>}<div className="mt-6 flex flex-wrap gap-3"><Link href="/seller/dashboard" className="rounded-xl bg-orange-600 px-4 py-3 text-white">لوحة البائع</Link><button onClick={signOut} className="rounded-xl border px-4 py-3">تسجيل الخروج</button></div></section><section className="mt-8 rounded-3xl border bg-white p-7"><h2 className="text-2xl font-black">طلباتي</h2>{orders.length===0?<p className="mt-4 text-slate-500">ما عندك حتى طلب دابا.</p>:orders.map(o=><div key={o.id} className="flex flex-wrap justify-between gap-3 border-b py-4"><div><p className="font-bold">طلب #{o.id.slice(0,8)}</p><p className="text-sm text-slate-500">{o.shipping_city} · {new Date(o.created_at).toLocaleDateString('ar-MA')}</p></div><div className="text-left"><b>{Number(o.total_mad).toLocaleString('ar-MA')} درهم</b><p className="text-sm text-orange-700">{o.status}</p></div></div>)}</section></div>;
 }
