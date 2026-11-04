@@ -1,39 +1,16 @@
-export default function AdminDashboardPage() {
-  return (
-    <div dir="rtl" className="mx-auto max-w-7xl px-4 py-10 md:px-6">
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
-        وضع العرض التجريبي: الأرقام والعناصر أدناه أمثلة ثابتة وليست إحصائيات حقيقية. هذه الصفحة ليست بعد محمية بصلاحيات إدارة فعلية، فلا تستعملها لإدارة بيانات حقيقية.
-      </div>
-      <h1 className="mt-6 text-3xl font-black text-slate-900">لوحة الإدارة — عرض تجريبي</h1>
-      <div className="mt-8 grid gap-5 md:grid-cols-4">
-        {[
-          { label: 'مستخدمون تجريبيون', value: '3,420' },
-          { label: 'متاجر تجريبية', value: '124' },
-          { label: 'منتجات تجريبية', value: '7,980' },
-          { label: 'طلبات تجريبية', value: '1,680' },
-        ].map((stat) => (
-          <div key={stat.label} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-500">{stat.label}</p>
-            <p className="mt-3 text-3xl font-black text-slate-900">{stat.value}</p>
-          </div>
-        ))}
-      </div>
-      <div className="mt-8 grid gap-8 lg:grid-cols-2">
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-soft">
-          <h2 className="text-xl font-black text-slate-900">أمثلة على المراجعة</h2>
-          <ul className="mt-5 space-y-3 text-sm text-slate-600">
-            <li className="rounded-2xl bg-slate-50 p-3">منتج تجريبي: سجادة أمازيغية — للمراجعة</li>
-            <li className="rounded-2xl bg-slate-50 p-3">بلاغ تجريبي: محتوى يحتاج إلى مراجعة</li>
-          </ul>
-        </div>
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-soft">
-          <h2 className="text-xl font-black text-slate-900">سجل تجريبي</h2>
-          <ul className="mt-5 space-y-3 text-sm text-slate-600">
-            <li className="rounded-2xl bg-slate-50 p-3">متجر تجريبي: Atlas Market</li>
-            <li className="rounded-2xl bg-slate-50 p-3">تم فحص 3 منتجات تجريبية</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  );
+'use client';
+import {useEffect,useState} from 'react';
+import {createClient,supabaseReady} from '@/lib/supabase';
+type Store={id:string;name:string;city:string;description:string;status:string};
+type Product={id:string;name:string;price_mad:number;stock:number;status:string;stores:{name:string}|null};
+type Review={id:string;rating:number;comment:string;status:string;product_id:string};
+type Order={id:string;customer_name:string;customer_phone:string;status:string;total_mad:number;created_at:string};
+export default function AdminDashboardPage(){
+ const [authorized,setAuthorized]=useState(false),[checked,setChecked]=useState(false),[stores,setStores]=useState<Store[]>([]),[products,setProducts]=useState<Product[]>([]),[reviews,setReviews]=useState<Review[]>([]),[orders,setOrders]=useState<Order[]>([]),[message,setMessage]=useState('');
+ async function load(){const db=createClient();const {data:{user}}=await db.auth.getUser();if(!user||user.app_metadata?.role!=='admin'){setAuthorized(false);setChecked(true);return;}setAuthorized(true);const [s,p,r,o]=await Promise.all([db.from('stores').select('id,name,city,description,status').eq('status','pending'),db.from('products').select('id,name,price_mad,stock,status,stores(name)').eq('status','draft'),db.from('reviews').select('id,rating,comment,status,product_id').eq('status','pending'),db.from('orders').select('id,customer_name,customer_phone,status,total_mad,created_at').order('created_at',{ascending:false}).limit(50)]);setStores(s.data??[]);setProducts((p.data??[]) as unknown as Product[]);setReviews(r.data??[]);setOrders(o.data??[]);setChecked(true);}
+ useEffect(()=>{if(supabaseReady)void load();else setChecked(true);},[]);
+ async function update(table:string,id:string,values:Record<string,string>){const {error}=await createClient().from(table).update(values).eq('id',id);setMessage(error?'تعذر حفظ التغيير. تأكد من صلاحيات الإدارة.':'تم تحديث البيانات.');await load();}
+ if(!checked)return <p className="py-20 text-center">جاري التحقق من صلاحيات الإدارة...</p>;
+ if(!authorized)return <div dir="rtl" className="mx-auto max-w-2xl px-4 py-20 text-center"><h1 className="text-2xl font-black">الدخول مخصص للإدارة</h1><p className="mt-3 text-slate-500">خاص يكون الحساب عنده صلاحية admin في app_metadata داخل Supabase.</p></div>;
+ return <div dir="rtl" className="mx-auto max-w-7xl px-4 py-10"><h1 className="text-3xl font-black">لوحة إدارة سوقي</h1>{message&&<p role="status" className="my-4 rounded-xl bg-emerald-50 p-3">{message}</p>}<div className="mt-8 grid gap-6 lg:grid-cols-2"><section className="rounded-3xl border bg-white p-6"><h2 className="text-xl font-bold">طلبات فتح المتاجر ({stores.length})</h2>{stores.map(s=><div key={s.id} className="border-b py-4"><b>{s.name}</b><p className="text-sm text-slate-500">{s.city} — {s.description}</p><button onClick={()=>void update('stores',s.id,{status:'active'})} className="mt-3 rounded-lg bg-emerald-700 px-4 py-2 text-white">الموافقة على المتجر</button></div>)}{stores.length===0&&<p className="mt-4 text-slate-500">لا توجد طلبات جديدة.</p>}</section><section className="rounded-3xl border bg-white p-6"><h2 className="text-xl font-bold">منتجات للمراجعة ({products.length})</h2>{products.map(p=><div key={p.id} className="border-b py-4"><b>{p.name}</b><p className="text-sm text-slate-500">{p.stores?.name} · {p.price_mad} درهم · المخزون {p.stock}</p><button onClick={()=>void update('products',p.id,{status:'active'})} className="mt-3 rounded-lg bg-emerald-700 px-4 py-2 text-white">نشر المنتج</button></div>)}{products.length===0&&<p className="mt-4 text-slate-500">لا توجد منتجات للمراجعة.</p>}</section><section className="rounded-3xl border bg-white p-6"><h2 className="text-xl font-bold">تقييمات للمراجعة ({reviews.length})</h2>{reviews.map(r=><div key={r.id} className="border-b py-4"><p>تقييم {r.rating}/5</p><p className="my-2 text-sm">{r.comment}</p><div className="flex gap-2"><button onClick={()=>void update('reviews',r.id,{status:'published'})} className="rounded-lg bg-emerald-700 px-3 py-2 text-white">نشر</button><button onClick={()=>void update('reviews',r.id,{status:'rejected'})} className="rounded-lg bg-red-700 px-3 py-2 text-white">رفض</button></div></div>)}{reviews.length===0&&<p className="mt-4 text-slate-500">لا توجد تقييمات جديدة.</p>}</section><section className="rounded-3xl border bg-white p-6"><h2 className="text-xl font-bold">آخر الطلبات ({orders.length})</h2>{orders.map(o=><div key={o.id} className="flex flex-wrap justify-between gap-3 border-b py-3"><div><b>{o.customer_name}</b><p className="text-sm text-slate-500">{o.customer_phone} · {o.total_mad} درهم</p></div><select value={o.status} onChange={e=>void update('orders',o.id,{status:e.target.value})} className="rounded-lg border p-2"><option value="pending">جديد</option><option value="confirmed">مؤكد</option><option value="processing">قيد التحضير</option><option value="shipped">تم الشحن</option><option value="delivered">تم التسليم</option><option value="cancelled">ملغى</option></select></div>)}</section></div></div>;
 }
