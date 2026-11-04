@@ -15,11 +15,11 @@ const siteUrl =
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: { default: 'سوقي | Souqi', template: '%s | سوقي' },
-  description: 'سوقي منصة مغربية لاكتشاف المنتجات والمتاجر المحلية. نسخة تجريبية؛ الطلبات والدفع الحقيقي غير مفعّلين بعد.',
+  description: 'سوقي منصة مغربية لاكتشاف المنتجات والمتاجر المحلية وإتمام الطلبات والدفع عند الاستلام.',
   keywords: ['سوقي', 'Souqi', 'المغرب', 'التسوق', 'المنتجات المحلية', 'المتاجر المغربية'],
   openGraph: {
     title: 'سوقي | Souqi',
-    description: 'اكتشف المنتجات والمتاجر المحلية في المغرب.',
+    description: 'اكتشف المنتجات والمتاجر المحلية في المغرب واطلب بسهولة مع الدفع عند الاستلام.',
     url: siteUrl,
     siteName: 'سوقي',
     locale: 'ar_MA',
